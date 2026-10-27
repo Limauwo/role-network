@@ -1,4 +1,4 @@
-import type { GraphData, ValidationError } from '../src/types/graph';
+import type { GraphData, ValidationError } from '../types/graph';
 
 /**
  * Validates the consistency and structural integrity of GraphData:

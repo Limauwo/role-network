@@ -1,4 +1,4 @@
-import type { Stylesheet } from 'cytoscape';
+import type { StylesheetStyle } from 'cytoscape';
 
 /**
  * Cytoscape stylesheet tailored for a sleek cyber-network theme:
@@ -8,7 +8,7 @@ import type { Stylesheet } from 'cytoscape';
  * - Prerequisite edges (dashed with arrows, amber/gold)
  * - Hover / Neighbor highlighting and dimming classes
  */
-export const graphStyles: Stylesheet[] = [
+export const graphStyles: StylesheetStyle[] = [
   // --- Core Node Styling ---
   {
     selector: 'node',
@@ -187,6 +187,37 @@ export const graphStyles: Stylesheet[] = [
     style: {
       'border-color': '#f43f5e',
       'border-width': 4,
+    },
+  },
+
+  // --- Feature: Learned node styling (emerald green halo / badge) ---
+  {
+    selector: 'node.learned',
+    style: {
+      'border-color': '#10b981',
+      'border-width': 3.5,
+      'background-blacken': 0.15,
+    },
+  },
+
+  // --- Feature: Path highlighting from root to selected node ---
+  {
+    selector: 'node.path-node',
+    style: {
+      opacity: 1,
+      'text-opacity': 1,
+      'border-color': '#38bdf8',
+      'border-width': 3.5,
+    },
+  },
+  {
+    selector: 'edge.path-edge',
+    style: {
+      opacity: 1,
+      width: 4,
+      'line-color': '#38bdf8',
+      'target-arrow-color': '#38bdf8',
+      'z-index': 999,
     },
   },
 ];

@@ -12,6 +12,8 @@ import { computeDeterministicLayout } from './layoutCalculator';
 interface NetworkGraphProps {
   data: GraphData;
   selectedNodeId?: string | null;
+  learnedNodeIds?: Set<string>;
+  pathToHighlight?: string[]; // Node IDs from root to selected [root, ..., target]
   onSelectNode?: (node: GraphNode | null) => void;
   graphState?: ReturnType<typeof useGraphState>;
 }
@@ -19,6 +21,8 @@ interface NetworkGraphProps {
 export const NetworkGraph: React.FC<NetworkGraphProps> = ({
   data,
   selectedNodeId = null,
+  learnedNodeIds,
+  pathToHighlight = [],
   onSelectNode,
   graphState: externalGraphState,
 }) => {
@@ -242,7 +246,7 @@ export const NetworkGraph: React.FC<NetworkGraphProps> = ({
     });
   }, [visibleGraph, layoutPositions, state.expandedNodeIds]);
 
-  // 3. Sync Hover Dimming & Neighbor Highlight
+  // 3. Sync Hover Dimming, Path Highlighting, and Selection
   useEffect(() => {
     const cy = cyRef.current;
     if (!cy) return;
@@ -250,9 +254,32 @@ export const NetworkGraph: React.FC<NetworkGraphProps> = ({
     cy.batch(() => {
       const all = cy.elements();
 
-      if (!state.hoveredNodeId) {
-        all.removeClass('dimmed highlighted');
-      } else {
+      // Reset dynamic interactive classes
+      all.removeClass('dimmed highlighted path-node path-edge selected');
+
+      // 1. Path highlighting: when a node is selected, highlight path from root to node
+      const hasActivePath = pathToHighlight.length > 0;
+      if (hasActivePath) {
+        const pathNodeSet = new Set<string>(pathToHighlight);
+        const pathNodes = cy.nodes().filter((n: NodeSingular) => pathNodeSet.has(n.id()));
+        pathNodes.addClass('path-node');
+
+        // Highlight connecting part_of edges along the path
+        for (let i = 0; i < pathToHighlight.length - 1; i++) {
+          const u = pathToHighlight[i];
+          const v = pathToHighlight[i + 1];
+          const edge = cy.edges(`[source = "${u}"][target = "${v}"][kind = "part_of"]`);
+          edge.addClass('path-edge');
+        }
+
+        // Dim everything else not on the path (unless hovered)
+        if (!state.hoveredNodeId) {
+          all.not('.path-node, .path-edge').addClass('dimmed');
+        }
+      }
+
+      // 2. Hover highlight (takes precedence for neighborhood exploration)
+      if (state.hoveredNodeId) {
         const hoveredNode = cy.getElementById(state.hoveredNodeId);
         if (hoveredNode.length > 0) {
           const neighborhood = hoveredNode.closedNeighborhood();
@@ -261,17 +288,32 @@ export const NetworkGraph: React.FC<NetworkGraphProps> = ({
         }
       }
 
-      // Sync selected class (from prop or internal state)
-      const activeSelectedId = selectedNodeId !== undefined ? selectedNodeId : state.selectedNodeId;
-      all.nodes().forEach((n) => {
-        if (n.id() === activeSelectedId) {
-          n.addClass('selected');
-        } else {
-          n.removeClass('selected');
-        }
-      });
+      // 3. Sync selected class
+      const activeSelectedId =
+        selectedNodeId !== undefined ? selectedNodeId : state.selectedNodeId;
+      if (activeSelectedId) {
+        const targetNode = cy.getElementById(activeSelectedId);
+        targetNode.addClass('selected');
+      }
+
+      // 4. Sync learned class for progress tracking
+      if (learnedNodeIds) {
+        cy.nodes().forEach((n) => {
+          if (learnedNodeIds.has(n.id())) {
+            n.addClass('learned');
+          } else {
+            n.removeClass('learned');
+          }
+        });
+      }
     });
-  }, [state.hoveredNodeId, state.selectedNodeId, selectedNodeId]);
+  }, [
+    state.hoveredNodeId,
+    state.selectedNodeId,
+    selectedNodeId,
+    pathToHighlight,
+    learnedNodeIds,
+  ]);
 
   return (
     <div className="relative w-full h-full flex flex-col bg-slate-950 select-none">

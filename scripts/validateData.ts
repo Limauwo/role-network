@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateGraphData } from '../src/data/validator.ts';
-import type { GraphData } from '../src/types/graph.ts';
+import { validateGraphData } from '../src/data/validator';
+import type { GraphData } from '../src/types/graph';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

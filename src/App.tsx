@@ -2,14 +2,19 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { loadGraphData } from './data/loadGraph';
 import { NetworkGraph } from './components/NetworkGraph';
 import { DetailPanel } from './components/DetailPanel';
+import { SearchBar } from './components/SearchBar';
 import { useGraphState } from './state/graphState';
+import { useProgress } from './state/useProgress';
 import { getAncestorPathToExpand } from './data/traversal';
+import { getBreadcrumbPath } from './data/searchAndProgress';
 import type { GraphNode } from './types/graph';
 
 export const App: React.FC = () => {
   const graphData = useMemo(() => loadGraphData(), []);
   const graphState = useGraphState(graphData);
   const { expandNodes, setSelected } = graphState;
+
+  const { learnedNodeIds, toggleLearned, resetProgress } = useProgress();
 
   const [selectedNode, setSelectedNodeState] = useState<GraphNode | null>(null);
 
@@ -48,6 +53,12 @@ export const App: React.FC = () => {
     },
     [setSelected, expandNodes, graphData]
   );
+
+  // Path from root to selected node for highlight & breadcrumb
+  const pathToHighlight = useMemo(() => {
+    if (!selectedNode) return [];
+    return getBreadcrumbPath(selectedNode.id, graphData);
+  }, [selectedNode, graphData]);
 
   // Handle URL hash on initial load and popstate
   useEffect(() => {
@@ -96,14 +107,14 @@ export const App: React.FC = () => {
     };
   }, [selectedNode, handleSelectNode]);
 
-  // Check if detail panel should open (for role, skill, tool, or any selected node)
+  // Check if detail panel should open
   const isDetailPanelOpen = selectedNode !== null;
 
   return (
     <div className="relative w-screen h-screen overflow-hidden flex flex-col bg-slate-950 font-sans text-slate-100">
       {/* Top Navbar Header */}
-      <header className="h-14 border-b border-slate-800/80 px-6 flex items-center justify-between bg-slate-900/70 backdrop-blur-md z-20">
-        <div className="flex items-center gap-3">
+      <header className="h-14 border-b border-slate-800/80 px-6 flex items-center justify-between gap-4 bg-slate-900/70 backdrop-blur-md z-20">
+        <div className="flex items-center gap-3 shrink-0">
           <div className="w-3 h-3 rounded-full bg-sky-400 shadow-[0_0_12px_#38bdf8]"></div>
           <div>
             <h1 className="text-base font-bold text-white tracking-wide">
@@ -115,13 +126,24 @@ export const App: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 text-xs text-slate-400">
-          <div className="hidden sm:flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Graf Aktif</span>
+        {/* Global Search Bar with Shortcut '/' and Filters */}
+        <div className="flex-1 max-w-md mx-auto hidden sm:block">
+          <SearchBar
+            nodes={graphData.nodes}
+            onSelectNode={handleSelectNode}
+          />
+        </div>
+
+        {/* Status and Progress Counter */}
+        <div className="flex items-center gap-3 shrink-0 text-xs text-slate-400">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-800/80 border border-slate-700/60">
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span className="text-slate-300 font-medium">
+              {learnedNodeIds.size} Pelajari
+            </span>
           </div>
-          <div className="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700/60 text-slate-300">
-            Fase 3 / 5
+          <div className="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700/60 text-slate-300 hidden md:block">
+            Fase 4 / 5
           </div>
         </div>
       </header>
@@ -131,6 +153,8 @@ export const App: React.FC = () => {
         <NetworkGraph
           data={graphData}
           selectedNodeId={selectedNode ? selectedNode.id : null}
+          learnedNodeIds={learnedNodeIds}
+          pathToHighlight={pathToHighlight}
           onSelectNode={handleSelectNode}
           graphState={graphState}
         />
@@ -140,6 +164,10 @@ export const App: React.FC = () => {
           <DetailPanel
             node={selectedNode}
             data={graphData}
+            breadcrumb={pathToHighlight}
+            learnedNodeIds={learnedNodeIds}
+            onToggleLearned={toggleLearned}
+            onResetProgress={resetProgress}
             onClose={() => handleSelectNode(null)}
             onSelectNode={handleSelectNode}
           />
