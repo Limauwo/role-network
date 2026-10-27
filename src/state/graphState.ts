@@ -13,6 +13,7 @@ export interface GraphState {
 export type GraphAction =
   | { type: 'TOGGLE_EXPAND'; nodeId: string }
   | { type: 'EXPAND_NODE'; nodeId: string }
+  | { type: 'EXPAND_NODES'; nodeIds: string[] }
   | { type: 'COLLAPSE_NODE'; nodeId: string }
   | { type: 'EXPAND_ALL' }
   | { type: 'RESET_VIEW' }
@@ -69,6 +70,22 @@ export function graphReducer(
       if (state.expandedNodeIds.has(action.nodeId)) return state;
       const nextExpanded = new Set(state.expandedNodeIds);
       nextExpanded.add(action.nodeId);
+      return {
+        ...state,
+        expandedNodeIds: nextExpanded,
+      };
+    }
+
+    case 'EXPAND_NODES': {
+      const nextExpanded = new Set(state.expandedNodeIds);
+      let changed = false;
+      for (const id of action.nodeIds) {
+        if (!nextExpanded.has(id)) {
+          nextExpanded.add(id);
+          changed = true;
+        }
+      }
+      if (!changed) return state;
       return {
         ...state,
         expandedNodeIds: nextExpanded,
@@ -246,6 +263,10 @@ export function useGraphState(data: GraphData) {
     dispatch({ type: 'EXPAND_NODE', nodeId });
   }, []);
 
+  const expandNodes = useCallback((nodeIds: string[]) => {
+    dispatch({ type: 'EXPAND_NODES', nodeIds });
+  }, []);
+
   const collapseNode = useCallback((nodeId: string) => {
     dispatch({ type: 'COLLAPSE_NODE', nodeId });
   }, []);
@@ -275,6 +296,7 @@ export function useGraphState(data: GraphData) {
     visibleGraph,
     toggleExpand,
     expandNode,
+    expandNodes,
     collapseNode,
     expandAll,
     resetView,

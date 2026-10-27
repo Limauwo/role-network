@@ -11,16 +11,21 @@ import { computeDeterministicLayout } from './layoutCalculator';
 
 interface NetworkGraphProps {
   data: GraphData;
+  selectedNodeId?: string | null;
   onSelectNode?: (node: GraphNode | null) => void;
+  graphState?: ReturnType<typeof useGraphState>;
 }
 
 export const NetworkGraph: React.FC<NetworkGraphProps> = ({
   data,
+  selectedNodeId = null,
   onSelectNode,
+  graphState: externalGraphState,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<CyCore | null>(null);
 
+  const internalGraphState = useGraphState(data);
   const {
     state,
     visibleGraph,
@@ -29,7 +34,7 @@ export const NetworkGraph: React.FC<NetworkGraphProps> = ({
     resetView,
     setHovered,
     setSelected,
-  } = useGraphState(data);
+  } = externalGraphState || internalGraphState;
 
   const visibleNodeIds = useMemo(() => {
     return new Set(visibleGraph.visibleNodes.map((n) => n.id));
@@ -256,16 +261,17 @@ export const NetworkGraph: React.FC<NetworkGraphProps> = ({
         }
       }
 
-      // Sync selected class
+      // Sync selected class (from prop or internal state)
+      const activeSelectedId = selectedNodeId !== undefined ? selectedNodeId : state.selectedNodeId;
       all.nodes().forEach((n) => {
-        if (n.id() === state.selectedNodeId) {
+        if (n.id() === activeSelectedId) {
           n.addClass('selected');
         } else {
           n.removeClass('selected');
         }
       });
     });
-  }, [state.hoveredNodeId, state.selectedNodeId]);
+  }, [state.hoveredNodeId, state.selectedNodeId, selectedNodeId]);
 
   return (
     <div className="relative w-full h-full flex flex-col bg-slate-950 select-none">
