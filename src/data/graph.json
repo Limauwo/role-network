@@ -1,0 +1,147 @@
+{
+  "nodes": [
+    {
+      "id": "it",
+      "label": "Teknologi Informasi (IT)",
+      "type": "root",
+      "description": "Pusat ekosistem industri teknologi informasi dan komputasi."
+    },
+    {
+      "id": "web-development",
+      "label": "Web Development",
+      "type": "field",
+      "description": "Bidang rekayasa perangkat lunak untuk situs dan aplikasi berbasis web."
+    },
+    {
+      "id": "frontend",
+      "label": "Frontend",
+      "type": "specialization",
+      "description": "Spesialisasi pengembangan antarmuka dan pengalaman pengguna (client-side)."
+    },
+    {
+      "id": "backend",
+      "label": "Backend",
+      "type": "specialization",
+      "description": "Spesialisasi arsitektur server, logika bisnis, dan basis data (server-side)."
+    },
+    {
+      "id": "fullstack",
+      "label": "Fullstack",
+      "type": "specialization",
+      "description": "Spesialisasi menyeluruh mencakup arsitektur klien dan server."
+    },
+    {
+      "id": "frontend-developer",
+      "label": "Frontend Developer",
+      "type": "role",
+      "description": "Peran profesional yang membangun antarmuka web interaktif dan responsif."
+    },
+    {
+      "id": "backend-developer",
+      "label": "Backend Developer",
+      "type": "role",
+      "description": "Peran profesional yang merancang API, manajemen basis data, dan performa server."
+    },
+    {
+      "id": "fullstack-developer",
+      "label": "Fullstack Developer",
+      "type": "role",
+      "description": "Peran profesional serbabisa yang menguasai ekosistem frontend dan backend secara terpadu."
+    },
+    {
+      "id": "git",
+      "label": "Git",
+      "type": "tool",
+      "category": "tooling",
+      "description": "Sistem kendali versi terdistribusi untuk melacak perubahan kode.",
+      "docsUrl": "https://git-scm.com/doc"
+    },
+    {
+      "id": "html",
+      "label": "HTML5",
+      "type": "skill",
+      "category": "language",
+      "description": "Bahasa markah standar untuk menstrukturkan konten di web.",
+      "docsUrl": "https://developer.mozilla.org/en-US/docs/Web/HTML"
+    },
+    {
+      "id": "css",
+      "label": "CSS3",
+      "type": "skill",
+      "category": "language",
+      "description": "Bahasa lembar gaya untuk mendesain tata letak dan visual web.",
+      "docsUrl": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+    },
+    {
+      "id": "javascript",
+      "label": "JavaScript",
+      "type": "skill",
+      "category": "language",
+      "description": "Bahasa pemrograman utama web untuk logika dinamis klien maupun server.",
+      "docsUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript"
+    },
+    {
+      "id": "typescript",
+      "label": "TypeScript",
+      "type": "skill",
+      "category": "language",
+      "description": "Superset JavaScript dengan sistem pengetikan statis yang kuat.",
+      "docsUrl": "https://www.typescriptlang.org/docs/"
+    },
+    {
+      "id": "react",
+      "label": "React",
+      "type": "skill",
+      "category": "framework",
+      "description": "Pustaka JavaScript berbasis komponen deklaratif untuk antarmuka pengguna.",
+      "docsUrl": "https://react.dev/"
+    },
+    {
+      "id": "nodejs",
+      "label": "Node.js",
+      "type": "skill",
+      "category": "platform",
+      "description": "Runtime JavaScript asinkron berbasis engine V8 untuk server.",
+      "docsUrl": "https://nodejs.org/en/docs"
+    },
+    {
+      "id": "postgresql",
+      "label": "PostgreSQL",
+      "type": "skill",
+      "category": "database",
+      "description": "Sistem manajemen basis data relasional objek open-source canggih.",
+      "docsUrl": "https://www.postgresql.org/docs/"
+    }
+  ],
+  "edges": [
+    { "source": "it", "target": "web-development", "kind": "part_of" },
+    { "source": "web-development", "target": "frontend", "kind": "part_of" },
+    { "source": "web-development", "target": "backend", "kind": "part_of" },
+    { "source": "web-development", "target": "fullstack", "kind": "part_of" },
+    { "source": "frontend", "target": "frontend-developer", "kind": "part_of" },
+    { "source": "backend", "target": "backend-developer", "kind": "part_of" },
+    { "source": "fullstack", "target": "fullstack-developer", "kind": "part_of" },
+
+    { "source": "frontend-developer", "target": "git", "kind": "part_of" },
+    { "source": "frontend-developer", "target": "html", "kind": "part_of" },
+    { "source": "frontend-developer", "target": "css", "kind": "part_of" },
+    { "source": "frontend-developer", "target": "javascript", "kind": "part_of" },
+    { "source": "frontend-developer", "target": "typescript", "kind": "part_of" },
+    { "source": "frontend-developer", "target": "react", "kind": "part_of" },
+
+    { "source": "backend-developer", "target": "git", "kind": "part_of" },
+    { "source": "backend-developer", "target": "javascript", "kind": "part_of" },
+    { "source": "backend-developer", "target": "typescript", "kind": "part_of" },
+    { "source": "backend-developer", "target": "nodejs", "kind": "part_of" },
+    { "source": "backend-developer", "target": "postgresql", "kind": "part_of" },
+
+    { "source": "fullstack-developer", "target": "frontend-developer", "kind": "part_of" },
+    { "source": "fullstack-developer", "target": "backend-developer", "kind": "part_of" },
+
+    { "source": "html", "target": "css", "kind": "prerequisite" },
+    { "source": "css", "target": "javascript", "kind": "prerequisite" },
+    { "source": "javascript", "target": "typescript", "kind": "prerequisite" },
+    { "source": "javascript", "target": "react", "kind": "prerequisite" },
+    { "source": "javascript", "target": "nodejs", "kind": "prerequisite" }
+  ]
+}
