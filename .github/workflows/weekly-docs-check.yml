@@ -1,0 +1,28 @@
+name: Weekly Docs URL Health Check
+
+on:
+  schedule:
+    # Run every Sunday at midnight (00:00 UTC)
+    - cron: '0 0 * * 0'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  check-docs-urls:
+    name: Check Live Status of Documentation URLs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Check Documentation URLs
+        run: npm run check:urls

@@ -151,23 +151,23 @@ export const NetworkGraph: React.FC<NetworkGraphProps> = ({
     if (!cy) return;
 
     cy.batch(() => {
-      const existingElements = cy.elements();
       const nextNodeIds = new Set(visibleGraph.visibleNodes.map((n) => n.id));
       const nextEdgeKeys = new Set(
         visibleGraph.visibleEdges.map((e) => `${e.source}->${e.target}:${e.kind}`)
       );
 
-      // Remove obsolete nodes/edges
-      existingElements.forEach((el) => {
-        if (el.isNode()) {
-          if (!nextNodeIds.has(el.id())) {
-            cy.remove(el);
-          }
-        } else if (el.isEdge()) {
-          const key = `${el.data('source')}->${el.data('target')}:${el.data('kind')}`;
-          if (!nextEdgeKeys.has(key)) {
-            cy.remove(el);
-          }
+      // Remove obsolete nodes
+      cy.nodes().forEach((node) => {
+        if (!nextNodeIds.has(node.id())) {
+          cy.remove(node);
+        }
+      });
+
+      // Remove obsolete edges
+      cy.edges().forEach((edge) => {
+        const key = `${edge.data('source')}->${edge.data('target')}:${edge.data('kind')}`;
+        if (!nextEdgeKeys.has(key)) {
+          cy.remove(edge);
         }
       });
 
@@ -201,11 +201,19 @@ export const NetworkGraph: React.FC<NetworkGraphProps> = ({
           });
           const currPos = cyNode.position();
           if (currPos.x !== pos.x || currPos.y !== pos.y) {
-            cyNode.animate({
-              position: pos,
-              duration: 350,
-              easing: 'ease-in-out-cubic',
-            });
+            const prefersReducedMotion =
+              typeof window !== 'undefined' &&
+              window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            if (prefersReducedMotion) {
+              cyNode.position(pos);
+            } else {
+              cyNode.animate({
+                position: pos,
+                duration: 350,
+                easing: 'ease-in-out-cubic',
+              });
+            }
           }
         }
 
@@ -235,15 +243,23 @@ export const NetworkGraph: React.FC<NetworkGraphProps> = ({
       });
     });
 
-    // Smooth camera fit without jarring jump
-    cy.animate({
-      fit: {
-        eles: cy.elements(),
-        padding: 50,
-      },
-      duration: 400,
-      easing: 'ease-in-out-cubic',
-    });
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Smooth camera fit without jarring jump (instant if prefers-reduced-motion)
+    if (prefersReducedMotion) {
+      cy.fit(cy.elements(), 50);
+    } else {
+      cy.animate({
+        fit: {
+          eles: cy.elements(),
+          padding: 50,
+        },
+        duration: 400,
+        easing: 'ease-in-out-cubic',
+      });
+    }
   }, [visibleGraph, layoutPositions, state.expandedNodeIds]);
 
   // 3. Sync Hover Dimming, Path Highlighting, and Selection
@@ -318,36 +334,46 @@ export const NetworkGraph: React.FC<NetworkGraphProps> = ({
   return (
     <div className="relative w-full h-full flex flex-col bg-slate-950 select-none">
       {/* Top Action Toolbar */}
-      <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-slate-900/80 backdrop-blur-md border border-slate-800 p-1.5 rounded-lg shadow-lg">
+      <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-md border border-slate-800 p-1.5 rounded-lg shadow-lg">
         <button
           type="button"
           onClick={resetView}
-          className="px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded transition"
+          className="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400 rounded transition min-h-[44px] flex items-center"
           title="Kembalikan ke tampilan awal (IT & Bidang)"
+          aria-label="Kembalikan ke tampilan awal"
         >
           Reset Tampilan
         </button>
         <button
           type="button"
           onClick={expandAll}
-          className="px-3 py-1.5 text-xs font-medium text-sky-400 hover:text-sky-300 hover:bg-slate-800 rounded transition"
+          className="px-3 py-2 text-xs font-medium text-sky-400 hover:text-sky-300 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400 rounded transition min-h-[44px] flex items-center"
           title="Buka semua cabang"
+          aria-label="Buka semua cabang hierarki"
         >
           Buka Semua
         </button>
-        <span className="text-slate-700">|</span>
+        <span className="text-slate-700 hidden sm:inline">|</span>
         <button
           type="button"
           onClick={() => {
             if (cyRef.current) {
-              cyRef.current.animate({
-                fit: { eles: cyRef.current.elements(), padding: 50 },
-                duration: 350,
-              });
+              const prefersReducedMotion =
+                typeof window !== 'undefined' &&
+                window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+              if (prefersReducedMotion) {
+                cyRef.current.fit(cyRef.current.elements(), 50);
+              } else {
+                cyRef.current.animate({
+                  fit: { eles: cyRef.current.elements(), padding: 50 },
+                  duration: 350,
+                });
+              }
             }
           }}
-          className="px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded transition"
+          className="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400 rounded transition min-h-[44px] flex items-center"
           title="Pusatkan graf"
+          aria-label="Pusatkan posisi graf"
         >
           Pusatkan
         </button>

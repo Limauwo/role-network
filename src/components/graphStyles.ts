@@ -32,7 +32,6 @@ export const graphStyles: StylesheetStyle[] = [
       'transition-property':
         'background-color, border-color, border-width, opacity, text-opacity, width, height',
       'transition-duration': 0.25,
-      cursor: 'pointer',
     },
   },
 
